@@ -13,8 +13,6 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
   const paused = useRef(false);
   const dragging = useRef(false);
   const dragged = useRef(0);
-  const startX = useRef(0);
-  const startScroll = useRef(0);
 
   // Avance automatico. La pista lleva la lista duplicada: al pasar la mitad
   // restamos esa mitad y el bucle queda sin costura.
@@ -40,33 +38,43 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Arrastre con el mouse. En tactil no se toca: el scroll nativo ya lo resuelve.
+  // Arrastre con el mouse; en tactil el scroll nativo ya lo resuelve.
+  //
+  // Nada de setPointerCapture: capturar el puntero en la pista hace que el
+  // navegador despache el `click` sobre ella y no sobre el <a>, y las tarjetas
+  // dejan de abrir. Para que el arrastre sobreviva si el cursor se sale de la
+  // pista, escuchamos en document mientras dura.
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     paused.current = true;
-    if (e.pointerType !== "mouse") return;
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
     const el = trackRef.current;
     if (!el) return;
+
     dragging.current = true;
     dragged.current = 0;
-    startX.current = e.clientX;
-    startScroll.current = el.scrollLeft;
-    el.setPointerCapture(e.pointerId);
+    const startX = e.clientX;
+    const startScroll = el.scrollLeft;
+
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      dragged.current = Math.max(dragged.current, Math.abs(dx));
+      el.scrollLeft = startScroll - dx;
+      if (dragged.current > DRAG_THRESHOLD) ev.preventDefault(); // no selecciona texto
+    };
+    const up = () => {
+      dragging.current = false;
+      document.removeEventListener("pointermove", move);
+      document.removeEventListener("pointerup", up);
+      document.removeEventListener("pointercancel", up);
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up);
+    document.addEventListener("pointercancel", up);
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragging.current) return;
-    const el = trackRef.current;
-    if (!el) return;
-    const dx = e.clientX - startX.current;
-    dragged.current = Math.max(dragged.current, Math.abs(dx));
-    el.scrollLeft = startScroll.current - dx;
-  };
-
-  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = trackRef.current;
-    if (dragging.current && el?.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
-    dragging.current = false;
-    if (e.pointerType !== "mouse") paused.current = false; // en mouse lo reanuda pointerleave
+  // En tactil, al soltar se reanuda; con mouse lo reanuda pointerleave.
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") paused.current = false;
   };
 
   // Si se arrastro, el clic que sigue no debe abrir la barberia.
@@ -74,8 +82,8 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
     if (dragged.current > DRAG_THRESHOLD) {
       e.preventDefault();
       e.stopPropagation();
-      dragged.current = 0;
     }
+    dragged.current = 0;
   };
 
   return (
@@ -86,9 +94,8 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
         onPointerEnter={() => (paused.current = true)}
         onPointerLeave={() => (paused.current = false)}
         onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
         onClickCapture={onClickCapture}
         onFocusCapture={() => (paused.current = true)}
         onBlurCapture={() => (paused.current = false)}
