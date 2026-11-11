@@ -90,13 +90,22 @@ export default function RegisterForm() {
             id="services"
             name="services"
             rows={4}
+            required
             className="field font-mono text-sm"
             defaultValue={"Corte clásico | 30 | 150\nCorte + barba | 60 | 250\nArreglo de barba | 30 | 120"}
           />
         </div>
         <div>
           <label className="label" htmlFor="barbers">Barberos — uno por línea</label>
-          <textarea id="barbers" name="barbers" rows={3} className="field" placeholder={"Carlos\nMiguel"} />
+          <textarea
+            id="barbers"
+            name="barbers"
+            rows={3}
+            required
+            className="field"
+            placeholder={"Carlos\nMiguel"}
+          />
+          <p className="mt-1 text-xs text-muted">Escribe al menos uno; el ejemplo gris no cuenta.</p>
         </div>
       </section>
 

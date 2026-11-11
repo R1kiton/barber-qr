@@ -46,3 +46,17 @@ export type Appointment = {
   createdAt: string;
   checkedInAt: string | null; // cuando la barbería escaneó el QR del cliente
 };
+
+/** Resumen público de una barbería para el directorio de la portada. */
+export type ShopCard = {
+  slug: string;
+  name: string;
+  address: string;
+  phone: string;
+  openTime: string; // "HH:MM"
+  closeTime: string; // "HH:MM"
+  workDays: number[]; // 0 = domingo … 6 = sábado
+  barbers: number;
+  priceFrom: number | null;
+  services: string[];
+};

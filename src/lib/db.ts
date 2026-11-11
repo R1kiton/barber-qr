@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { connection } from "next/server";
-import type { Appointment, AppointmentStatus, PublicShop, Shop } from "./types";
+import type { Appointment, AppointmentStatus, PublicShop, Shop, ShopCard } from "./types";
 import { hashPin } from "./auth";
 import { toMin } from "./time";
 
@@ -246,6 +246,47 @@ export function toPublic(shop: Shop): PublicShop {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pinHash, ...rest } = shop;
   return rest;
+}
+
+/**
+ * Directorio publico de barberias para la portada.
+ * Selecciona columnas explicitas: `pin_hash` nunca debe salir de aqui.
+ */
+export async function listShops(): Promise<ShopCard[]> {
+  await connection();
+  const { data, error } = await sb()
+    .from("shops")
+    .select("slug, name, address, phone, open_time, close_time, work_days, services(name, price), barbers(id)")
+    .order("created_at");
+  if (error) throw error;
+
+  type Row = {
+    slug: string;
+    name: string;
+    address: string;
+    phone: string;
+    open_time: string;
+    close_time: string;
+    work_days: number[];
+    services: { name: string; price: number | string }[];
+    barbers: { id: string }[];
+  };
+
+  return ((data ?? []) as Row[]).map((r) => {
+    const precios = r.services.map((x) => Number(x.price));
+    return {
+      slug: r.slug,
+      name: r.name,
+      address: r.address,
+      phone: r.phone,
+      openTime: r.open_time,
+      closeTime: r.close_time,
+      workDays: r.work_days,
+      barbers: r.barbers.length,
+      priceFrom: precios.length ? Math.min(...precios) : null,
+      services: r.services.map((x) => x.name),
+    };
+  });
 }
 
 // ---------- Citas ----------

@@ -50,3 +50,14 @@ export const isValidDate = (s: string) =>
 export const isValidTime = (s: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 
 export const formatPrice = (n: number) => `$${n.toLocaleString("es")}`;
+
+/** Días de trabajo en corto: "Todos los días", "Lun a Sáb" si son seguidos, si no "Lun · Mié · Vie". */
+export function formatWorkDays(days: number[]) {
+  const order = [1, 2, 3, 4, 5, 6, 0]; // la semana se lee empezando en lunes
+  const idx = [...new Set(days)].map((d) => order.indexOf(d)).filter((i) => i >= 0).sort((a, b) => a - b);
+  if (idx.length === 0) return "Sin días asignados";
+  if (idx.length === 7) return "Todos los días";
+  const seguidos = idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
+  if (seguidos && idx.length > 2) return `${DAY_SHORT[order[idx[0]]]} a ${DAY_SHORT[order[idx[idx.length - 1]]]}`;
+  return idx.map((i) => DAY_SHORT[order[i]]).join(" · ");
+}
