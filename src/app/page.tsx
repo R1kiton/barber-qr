@@ -1,138 +1,122 @@
 import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import ClientsCarousel from "@/components/ClientsCarousel";
+import SiteHeader from "@/components/SiteHeader";
 import { listShops } from "@/lib/db";
-import { formatPrice, formatWorkDays } from "@/lib/time";
-import type { ShopCard } from "@/lib/types";
 
 export default function Home() {
   return (
-    <main className="flex-1">
-      <div className="pole" />
-      <section className="mx-auto max-w-5xl px-5 pt-16 pb-20 grid gap-12 md:grid-cols-[1.2fr_1fr] md:items-center">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brass-ink">BarberQR</p>
-          <h1 className="mt-4 font-display text-5xl md:text-6xl leading-[1.02] tracking-tight">
-            Reserva, llega
-            <br />
-            <em className="text-brass">y muestra tu QR.</em>
-          </h1>
-          <p className="mt-6 max-w-md text-lg text-muted">
-            Tus clientes reservan desde el celular en menos de un minuto y reciben un código QR con su
-            cita. Al llegar, lo escaneas y la llegada queda confirmada.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#barberias" className="btn">
-              Ver barberías
-            </a>
-            <Link href="/registro" className="btn btn-ghost">
-              Registrar mi barbería
-            </Link>
-          </div>
-          <p className="mt-4 text-sm text-muted">
-            Panel de la demo:{" "}
-            <Link href="/admin/barberia-demo" className="underline underline-offset-4">
-              /admin/barberia-demo
-            </Link>{" "}
-            · PIN 1234
-          </p>
-        </div>
-
-        <ol className="grid gap-3">
-          {[
-            ["01", "El cliente reserva", "Elige servicio, barbero y hora desde tu enlace."],
-            ["02", "Recibe su QR", "Con los datos de la cita, listo para guardar en el celular."],
-            ["03", "Lo escaneas al llegar", "Confirmas la llegada y la ves en tu agenda."],
-          ].map(([n, t, d]) => (
-            <li key={n} className="flex gap-4 rounded-2xl border border-line bg-card p-5">
-              <span className="font-display text-2xl text-brass">{n}</span>
-              <div>
-                <p className="font-semibold">{t}</p>
-                <p className="text-sm text-muted">{d}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section id="barberias" className="border-t border-line bg-card/40">
-        <div className="mx-auto max-w-5xl px-5 py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brass-ink">Directorio</p>
-          <h2 className="mt-2 font-display text-3xl tracking-tight">Elige tu barbería</h2>
-          <p className="mt-2 text-muted">Toca una para ver sus servicios, barberos y horarios libres.</p>
-
-          <Suspense fallback={<DirectorySkeleton />}>
-            <Directory />
-          </Suspense>
-        </div>
-      </section>
-    </main>
+    <>
+      <SiteHeader />
+      <main className="flex-1">
+        <Hero />
+        <Clients />
+        <ForBarbershops />
+      </main>
+    </>
   );
 }
 
-function DirectorySkeleton() {
+/* ---------- 1. Eslogan sobre la foto ---------- */
+
+function Hero() {
   return (
-    <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-      {[0, 1, 2, 3].map((i) => (
-        <li key={i} className="h-40 animate-pulse rounded-2xl border border-line bg-card" />
-      ))}
-    </ul>
+    <section className="relative isolate flex min-h-svh items-center justify-center overflow-hidden">
+      <Image
+        src="/hero-barberia.jpg"
+        alt="Barbero cortando el cabello a un cliente con tijera y peine"
+        fill
+        priority
+        sizes="100vw"
+        className="hero-photo -z-10 object-cover"
+      />
+      {/* Oscurece para leer el eslogan y disuelve el borde inferior en el negro de la pagina. */}
+      <div className="hero-scrim absolute inset-0 -z-10" />
+
+      <div className="mx-auto max-w-3xl px-5 py-24 text-center">
+        <h1 className="font-display text-5xl leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
+          Reserva, escanea
+          <br />
+          <em className="text-brass">y disfruta.</em>
+        </h1>
+        <p className="mx-auto mt-6 max-w-md text-balance text-muted sm:text-lg">
+          Encuentra tu barbería, elige barbero y hora, y preséntate con el código QR de tu cita.
+        </p>
+      </div>
+    </section>
   );
 }
 
-async function Directory() {
+/* ---------- 2. Nuestros clientes ---------- */
+
+function Clients() {
+  return (
+    <section id="clientes" className="flex min-h-svh items-center py-20">
+      <div className="mx-auto w-full max-w-6xl px-5">
+        <div className="text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brass-ink">Directorio</p>
+          <h2 className="mt-2 font-display text-4xl tracking-tight">Nuestros clientes</h2>
+        </div>
+
+        <Suspense fallback={<CarouselSkeleton />}>
+          <ClientsTrack />
+        </Suspense>
+      </div>
+    </section>
+  );
+}
+
+function CarouselSkeleton() {
+  return (
+    <div className="-mx-5 mt-10 flex gap-4 overflow-hidden px-5">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-44 w-64 shrink-0 animate-pulse rounded-2xl border border-line bg-card sm:w-72" />
+      ))}
+    </div>
+  );
+}
+
+async function ClientsTrack() {
   const shops = await listShops();
 
   if (shops.length === 0) {
     return (
-      <div className="mt-8 rounded-2xl border border-line bg-card p-8 text-center">
-        <p className="font-semibold">Todavía no hay barberías registradas.</p>
-        <p className="mt-1 text-sm text-muted">¿Tienes una? Súbela y recibe reservas hoy mismo.</p>
-        <Link href="/registro" className="btn mt-6">
-          Registrar mi barbería
-        </Link>
-      </div>
+      <p className="mt-10 text-center text-muted">
+        Todavía no hay barberías registradas. La tuya puede ser la primera.
+      </p>
     );
   }
 
   return (
-    <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-      {shops.map((shop) => (
-        <ShopTile key={shop.slug} shop={shop} />
-      ))}
-    </ul>
+    <>
+      <ClientsCarousel shops={shops} />
+      <div className="mt-8 text-center">
+        <Link href="/barberias" className="btn btn-ghost btn-sm">
+          Ver todas
+        </Link>
+      </div>
+    </>
   );
 }
 
-function ShopTile({ shop }: { shop: ShopCard }) {
+/* ---------- 3. Registro de barberías ---------- */
+
+function ForBarbershops() {
   return (
-    <li>
-      <Link
-        href={`/b/${shop.slug}`}
-        className="group flex h-full flex-col rounded-2xl border border-line bg-card p-5 transition hover:border-brass focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-display text-2xl leading-tight tracking-tight">{shop.name}</h3>
-          {shop.priceFrom !== null && (
-            <span className="shrink-0 rounded-full border border-line px-3 py-1 text-xs font-semibold text-brass-ink">
-              desde {formatPrice(shop.priceFrom)}
-            </span>
-          )}
-        </div>
-
-        {shop.address && <p className="mt-1 text-sm text-muted">{shop.address}</p>}
-
-        <p className="mt-3 text-sm text-muted">
-          {formatWorkDays(shop.workDays)} · {shop.openTime}–{shop.closeTime}
+    <section id="para-barberias" className="flex min-h-svh items-center border-t border-line py-24">
+      <div className="mx-auto w-full max-w-2xl px-5 text-center">
+        <h2 className="font-display text-4xl tracking-tight">
+          ¿Buscas <em className="text-brass">nuestros servicios</em>?
+        </h2>
+        <p className="mt-5 text-balance text-muted">
+          Publica tu barbería, recibe reservas desde tu propio enlace y lleva la agenda del día en un
+          panel. Cada cliente llega con un código QR: lo escaneas y su llegada queda confirmada.
         </p>
-
-        {shop.services.length > 0 && (
-          <p className="mt-3 line-clamp-2 text-sm">{shop.services.join(" · ")}</p>
-        )}
-
-        <p className="mt-auto pt-4 text-sm font-semibold text-brass-ink group-hover:underline underline-offset-4">
-          Reservar · {shop.barbers} {shop.barbers === 1 ? "barbero" : "barberos"}
-        </p>
-      </Link>
-    </li>
+        <Link href="/registro" className="btn mt-9">
+          Registrar mi barbería
+        </Link>
+      </div>
+    </section>
   );
 }
