@@ -1,11 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readDb } from "@/lib/db";
+import { getAppointment, getShop } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import { checkInAppointment } from "@/app/actions";
 import { formatDateLong, formatPrice, localDateStr, toMin } from "@/lib/time";
-import { shortCode } from "@/lib/types";
 import LoginForm from "../../LoginForm";
 
 export default function CheckInPage({ params }: PageProps<"/admin/[slug]/checkin/[id]">) {
@@ -21,13 +20,12 @@ export default function CheckInPage({ params }: PageProps<"/admin/[slug]/checkin
 
 async function CheckIn({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const db = await readDb();
-  const shop = db.shops.find((s) => s.slug === slug);
+  const shop = await getShop(slug);
   if (!shop) notFound();
   if (!(await isAdmin(shop)))
     return <LoginForm slug={slug} shopName={shop.name} next={`/admin/${slug}/checkin/${id}`} />;
 
-  const appt = db.appointments.find((a) => a.id === id && a.shopId === shop.id);
+  const appt = await getAppointment(shop.id, id);
   if (!appt) {
     return (
       <Message tone="bad" title="QR no válido" slug={slug}>
@@ -36,7 +34,6 @@ async function CheckIn({ params }: { params: Promise<{ slug: string; id: string 
     );
   }
 
-  const service = shop.services.find((s) => s.id === appt.serviceId);
   const barber = shop.barbers.find((b) => b.id === appt.barberId);
   const now = new Date();
   const today = localDateStr(now);
@@ -91,10 +88,10 @@ async function CheckIn({ params }: { params: Promise<{ slug: string; id: string 
         <dl className="mt-4 grid gap-1 text-sm">
           <Row k="Fecha" v={formatDateLong(appt.date)} />
           <Row k="Hora" v={appt.time} />
-          <Row k="Servicio" v={service?.name ?? "—"} />
+          <Row k="Servicio" v={appt.serviceName} />
           <Row k="Barbero" v={barber?.name ?? "—"} />
-          <Row k="Precio" v={service ? formatPrice(service.price) : "—"} />
-          <Row k="Código" v={shortCode(appt.id)} />
+          <Row k="Precio" v={formatPrice(appt.price)} />
+          <Row k="Código" v={appt.code} />
         </dl>
       </div>
 

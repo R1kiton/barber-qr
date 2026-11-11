@@ -1,12 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readDb } from "@/lib/db";
+import { getAppointment, getShop } from "@/lib/db";
 import { cancelByCustomer } from "@/app/actions";
 import { getOrigin } from "@/lib/origin";
 import { qrPng, qrSvg } from "@/lib/qr";
 import { formatDateLong, formatPrice } from "@/lib/time";
-import { shortCode } from "@/lib/types";
 
 export default function CitaPage({ params }: PageProps<"/b/[slug]/cita/[id]">) {
   return (
@@ -21,15 +20,13 @@ export default function CitaPage({ params }: PageProps<"/b/[slug]/cita/[id]">) {
 
 async function CitaContent({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const db = await readDb();
-  const shop = db.shops.find((s) => s.slug === slug);
-  const appt = db.appointments.find((a) => a.id === id && a.shopId === shop?.id);
+  const shop = await getShop(slug);
+  const appt = shop ? await getAppointment(shop.id, id) : undefined;
   if (!shop || !appt) notFound();
 
-  const service = shop.services.find((s) => s.id === appt.serviceId);
   const barber = shop.barbers.find((b) => b.id === appt.barberId);
   const active = appt.status === "confirmada" && !appt.checkedInAt;
-  const code = shortCode(appt.id);
+  const code = appt.code;
 
   // El QR abre la ficha de la cita en el panel de la barbería (requiere PIN).
   const checkInUrl = `${await getOrigin()}/admin/${slug}/checkin/${appt.id}`;
@@ -86,10 +83,10 @@ async function CitaContent({ params }: { params: Promise<{ slug: string; id: str
           <p className="font-display text-2xl first-letter:uppercase">{formatDateLong(appt.date)}</p>
           <p className="font-display text-5xl tabular-nums">{appt.time}</p>
           <dl className="mt-4 grid gap-1 text-sm">
-            <Row k="Servicio" v={service?.name ?? "—"} />
+            <Row k="Servicio" v={appt.serviceName} />
             <Row k="Barbero" v={barber?.name ?? "—"} />
-            <Row k="Duración" v={service ? `${service.durationMin} min` : "—"} />
-            <Row k="Precio" v={service ? formatPrice(service.price) : "—"} />
+            <Row k="Duración" v={`${appt.durationMin} min`} />
+            <Row k="Precio" v={formatPrice(appt.price)} />
             <Row k="A nombre de" v={appt.customerName} />
             {shop.address && <Row k="Dirección" v={shop.address} />}
           </dl>

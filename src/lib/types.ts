@@ -31,22 +31,18 @@ export type AppointmentStatus = "confirmada" | "completada" | "cancelada";
 
 export type Appointment = {
   id: string;
+  code: string; // código corto bajo el QR
   shopId: string;
-  serviceId: string;
-  barberId: string;
+  serviceId: string | null;
+  barberId: string | null;
+  serviceName: string;
+  price: number;
+  durationMin: number;
   date: string; // "YYYY-MM-DD"
   time: string; // "HH:MM"
   customerName: string;
   customerPhone: string;
   status: AppointmentStatus;
   createdAt: string;
-  checkedInAt?: string; // cuando la barbería escaneó el QR del cliente
-};
-
-/** Código corto que acompaña al QR (por si la cámara falla). */
-export const shortCode = (id: string) => id.replace(/-/g, "").slice(0, 6).toUpperCase();
-
-export type Db = {
-  shops: Shop[];
-  appointments: Appointment[];
+  checkedInAt: string | null; // cuando la barbería escaneó el QR del cliente
 };

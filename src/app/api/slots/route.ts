@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { readDb } from "@/lib/db";
+import { getShop, listAppointments } from "@/lib/db";
 import { availableSlots } from "@/lib/slots";
 import { isValidDate } from "@/lib/time";
 
@@ -11,10 +11,10 @@ export async function GET(req: NextRequest) {
   const barberId = p.get("barberId") ?? "any";
 
   if (!isValidDate(date)) return Response.json({ slots: [] }, { status: 400 });
-  const db = await readDb();
-  const shop = db.shops.find((s) => s.slug === slug);
+  const shop = await getShop(slug);
   if (!shop) return Response.json({ slots: [] }, { status: 404 });
 
-  const slots = availableSlots(shop, db.appointments, date, serviceId, barberId, new Date());
+  const appts = await listAppointments(shop.id, { from: date, to: date });
+  const slots = availableSlots(shop, appts, date, serviceId, barberId, new Date());
   return Response.json({ slots }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -36,8 +36,14 @@ NEXT_PUBLIC_BASE_URL=https://tu-dominio.com
 ADMIN_SECRET=una-cadena-larga-y-secreta
 ```
 
-## Datos
+## Datos (Supabase)
 
-Se guardan en `data/db.json` (se crea solo con la barbería demo). Sirve para empezar o para un
-servidor propio; en Vercel u otro hosting sin disco persistente hay que cambiar `src/lib/db.ts`
-por una base de datos real (Postgres, Supabase, Turso…).
+Los datos viven en Supabase (Postgres). Tablas: `shops`, `services`, `barbers`, `appointments`.
+
+1. Ejecuta [`supabase/schema.sql`](supabase/schema.sql) en el **SQL Editor** de tu proyecto.
+2. En `.env.local` pon `SUPABASE_URL` y `SUPABASE_SECRET_KEY` (Project Settings → API Keys).
+3. `npm run dev`. La barbería demo se crea sola la primera vez que se visita.
+
+Seguridad: las tablas tienen RLS activado sin políticas, así que la clave pública no puede leer
+nada. La app solo habla con Supabase desde el servidor (`src/lib/db.ts`) con la clave secreta.
+La propia base de datos impide dos citas solapadas con el mismo barbero (restricción `exclude`).

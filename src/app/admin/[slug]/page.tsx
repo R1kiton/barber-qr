@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readDb } from "@/lib/db";
+import { getShop, listAppointments } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import { getOrigin } from "@/lib/origin";
 import { DAY_SHORT, addDays, formatDateLong, formatPrice, isValidDate, localDateStr, weekday } from "@/lib/time";
-import { shortCode, type Appointment, type Shop } from "@/lib/types";
+import type { Appointment, Shop } from "@/lib/types";
 import {
   addBarber,
   addService,
@@ -39,21 +39,20 @@ async function AdminContent({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const db = await readDb();
-  const shop = db.shops.find((s) => s.slug === slug);
+  const shop = await getShop(slug);
   if (!shop) notFound();
   if (!(await isAdmin(shop))) return <LoginForm slug={slug} shopName={shop.name} />;
 
   const today = localDateStr(new Date());
   const fecha = typeof sp.fecha === "string" && isValidDate(sp.fecha) ? sp.fecha : today;
 
-  const mine = db.appointments.filter((a) => a.shopId === shop.id);
-  const ofDay = mine.filter((a) => a.date === fecha).sort((a, b) => a.time.localeCompare(b.time));
   const week = Array.from({ length: 7 }, (_, i) => addDays(today, i));
-  const countFor = (d: string) => mine.filter((a) => a.date === d && a.status !== "cancelada").length;
-  const income = ofDay
-    .filter((a) => a.status !== "cancelada")
-    .reduce((sum, a) => sum + (shop.services.find((s) => s.id === a.serviceId)?.price ?? 0), 0);
+  const [ofDay, weekAppts] = await Promise.all([
+    listAppointments(shop.id, { from: fecha, to: fecha }),
+    listAppointments(shop.id, { from: week[0], to: week[6] }),
+  ]);
+  const countFor = (d: string) => weekAppts.filter((a) => a.date === d && a.status !== "cancelada").length;
+  const income = ofDay.filter((a) => a.status !== "cancelada").reduce((sum, a) => sum + a.price, 0);
 
   const bookingUrl = `${await getOrigin()}/b/${slug}`;
   const arrived = ofDay.filter((a) => a.checkedInAt && a.status !== "cancelada").length;
@@ -156,17 +155,16 @@ const STATUS_STYLE: Record<Appointment["status"], string> = {
 };
 
 function AppointmentRow({ a, shop }: { a: Appointment; shop: Shop }) {
-  const service = shop.services.find((s) => s.id === a.serviceId);
   const barber = shop.barbers.find((b) => b.id === a.barberId);
   const wa = a.customerPhone.replace(/\D/g, "");
   return (
     <li className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
       <span className="w-14 font-display text-xl tabular-nums">{a.time}</span>
-      <span className="font-mono text-xs text-muted">{shortCode(a.id)}</span>
+      <span className="font-mono text-xs text-muted">{a.code}</span>
       <div className="min-w-40 flex-1">
         <p className="font-semibold">{a.customerName}</p>
         <p className="text-sm text-muted">
-          {service?.name ?? "Servicio eliminado"} · {barber?.name ?? "—"} ·{" "}
+          {a.serviceName} · {barber?.name ?? "—"} ·{" "}
           <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="underline underline-offset-2">
             {a.customerPhone}
           </a>

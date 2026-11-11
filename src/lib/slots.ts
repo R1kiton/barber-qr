@@ -20,8 +20,7 @@ export function freeBarbers(
           if (a.shopId !== shop.id || a.barberId !== b.id || a.date !== date) return false;
           if (a.status === "cancelada") return false;
           const s = toMin(a.time);
-          const dur = shop.services.find((x) => x.id === a.serviceId)?.durationMin ?? SLOT_STEP_MIN;
-          return startMin < s + dur && s < end;
+          return startMin < s + a.durationMin && s < end;
         }),
     )
     .map((b) => b.id);

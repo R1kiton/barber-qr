@@ -17,7 +17,7 @@ export default function BookingWizard({ shop, today }: { shop: PublicShop; today
   const [barberId, setBarberId] = useState<string | null>(shop.barbers.length === 1 ? shop.barbers[0].id : null);
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
-  const [slots, setSlots] = useState<string[] | null>(null);
+  const [slotsData, setSlotsData] = useState<{ key: string; slots: string[] } | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,32 +33,33 @@ export default function BookingWizard({ shop, today }: { shop: PublicShop; today
     [today],
   );
 
-  // Rellena nombre/teléfono guardados de una reserva anterior.
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(SAVED_KEY) ?? "null");
-      if (saved?.name) setName(saved.name);
-      if (saved?.phone) setPhone(saved.phone);
-    } catch {}
-  }, []);
+  // Horarios: se guardan junto a la consulta que los produjo; si no coincide, están "cargando".
+  const slotsKey = `${serviceId}|${barberId}|${date}|${reload}`;
+  const slots = slotsData?.key === slotsKey ? slotsData.slots : null;
 
-  // Carga horarios disponibles.
   useEffect(() => {
     if (!serviceId || !barberId || !date) return;
     let cancelled = false;
-    setSlots(null);
     const q = new URLSearchParams({ slug: shop.slug, date, serviceId, barberId });
     fetch(`/api/slots?${q}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then((d: { slots: string[] }) => !cancelled && setSlots(d.slots))
-      .catch(() => !cancelled && setSlots([]));
+      .then((d: { slots: string[] }) => !cancelled && setSlotsData({ key: slotsKey, slots: d.slots }))
+      .catch(() => !cancelled && setSlotsData({ key: slotsKey, slots: [] }));
     return () => {
       cancelled = true;
     };
-  }, [shop.slug, serviceId, barberId, date, reload]);
+  }, [shop.slug, serviceId, barberId, date, slotsKey]);
 
   function go(n: number) {
     setError(null);
+    // Al llegar a "Tus datos", rellena nombre/teléfono de una reserva anterior.
+    if (n === 3 && !name && !phone) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SAVED_KEY) ?? "null");
+        if (saved?.name) setName(saved.name);
+        if (saved?.phone) setPhone(saved.phone);
+      } catch {}
+    }
     setStep(n);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
