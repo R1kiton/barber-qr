@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getAppointment, getShop } from "@/lib/db";
+import { notFound, redirect } from "next/navigation";
+import * as shops from "@/services/shop.service";
+import * as appointments from "@/services/appointment.service";
 import { isAdmin } from "@/lib/auth";
 import { checkInAppointment } from "@/app/actions";
 import { formatDateLong, formatPrice, localDateStr, toMin } from "@/lib/time";
-import LoginForm from "../../LoginForm";
 
 export default function CheckInPage({ params }: PageProps<"/admin/[slug]/checkin/[id]">) {
   return (
@@ -20,12 +20,12 @@ export default function CheckInPage({ params }: PageProps<"/admin/[slug]/checkin
 
 async function CheckIn({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const shop = await getShop(slug);
+  const shop = await shops.getBySlug(slug);
   if (!shop) notFound();
   if (!(await isAdmin(shop)))
-    return <LoginForm slug={slug} shopName={shop.name} next={`/admin/${slug}/checkin/${id}`} />;
+    redirect(`/login?next=${encodeURIComponent(`/admin/${slug}/checkin/${id}`)}`);
 
-  const appt = await getAppointment(shop.id, id);
+  const appt = await appointments.getById(shop.id, id);
   if (!appt) {
     return (
       <Message tone="bad" title="QR no válido" slug={slug}>

@@ -36,17 +36,21 @@ export default function RegisterForm() {
           </div>
         </div>
         <div>
-          <label className="label" htmlFor="pin">PIN del panel (4 a 8 dígitos)</label>
-          <input
-            id="pin"
-            name="pin"
-            required
-            inputMode="numeric"
-            pattern="\d{4,8}"
-            type="password"
-            className="field max-w-[12rem]"
-          />
+          <label className="label" htmlFor="email">Correo del propietario</label>
+          <input id="email" name="email" type="email" autoComplete="email" maxLength={254} required className="field" />
+          <p className="mt-2 text-sm text-muted">Te enviaremos un código para verificarlo antes de crear tu barbería.</p>
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="password">Contraseña</label>
+            <input id="password" name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required className="field" aria-describedby="password-hint" />
+          </div>
+          <div>
+            <label className="label" htmlFor="confirmPassword">Confirmar contraseña</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" minLength={12} maxLength={128} required className="field" />
+          </div>
+        </div>
+        <p id="password-hint" className="text-sm text-muted">Usa al menos 12 caracteres. Puedes usar una frase con espacios.</p>
       </section>
 
       <section className="grid gap-4 rounded-2xl border border-line bg-card p-5">
@@ -116,7 +120,7 @@ export default function RegisterForm() {
       )}
 
       <button className="btn justify-self-start" disabled={pending}>
-        {pending ? "Creando…" : "Crear barbería"}
+        {pending ? "Enviando código…" : "Verificar mi correo"}
       </button>
     </form>
   );

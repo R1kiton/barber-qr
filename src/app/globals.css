@@ -93,118 +93,159 @@ body {
   transform: scaleX(1);
 }
 
-/* ---------- Botones: liston plegado (ribbon) ---------- */
+@layer components {
+  /* ---------- Botones: liston plegado (ribbon) ---------- */
 
-/* Estructura, toda dentro de la caja del boton para que `w-full` no desborde:
-     ::before -> las dos colas, en dorado oscuro (el reverso del liston),
-                 con la muesca en V recortada en cada extremo.
-     ::after  -> la banda central plana, mas clara, donde se apoya el texto.
-   `isolation` encierra los z-index negativos para que las capas no se escapen
-   detras del fondo de una seccion. */
-.btn {
-  --ribbon-tail: 1.6rem; /* cuanto sobresale cada cola */
-  --ribbon-notch: 0.6rem; /* profundidad de la cola de golondrina */
-  --ribbon-shadow: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+  /* Estructura, toda dentro de la caja del boton para que `w-full` no desborde:
+       ::before -> las dos colas, en dorado oscuro (el reverso del liston),
+                   con la muesca en V recortada en cada extremo.
+       ::after  -> la banda central plana, mas clara, donde se apoya el texto.
+     `isolation` encierra los z-index negativos para que las capas no se escapen
+     detras del fondo de una seccion. */
+  .btn {
+    --ribbon-tail: 1.6rem; /* cuanto sobresale cada cola */
+    --ribbon-notch: 0.6rem; /* profundidad de la cola de golondrina */
+    --ribbon-shadow: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
 
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  --ribbon-drop: 0.5rem; /* cuanto bajan las colas respecto a la banda (el pliegue) */
-  --ribbon-tail-color: linear-gradient(180deg, #a2791f, #7a5714);
-  --ribbon-fold-color: #4f360a;
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    --ribbon-drop: 0.5rem; /* cuanto bajan las colas respecto a la banda (el pliegue) */
+    --ribbon-tail-color: linear-gradient(180deg, #a2791f, #7a5714);
+    --ribbon-fold-color: #4f360a;
 
-  padding: 0.8rem calc(var(--ribbon-tail) + 1.3rem) calc(0.8rem + var(--ribbon-drop));
-  font-weight: 600;
-  color: #15120d;
-  background: transparent;
-  filter: var(--ribbon-shadow);
-  transition: transform 0.15s ease, filter 0.15s ease, border-color 0.2s ease, color 0.2s ease;
-}
+    padding: 0.8rem calc(var(--ribbon-tail) + 1.3rem) calc(0.8rem + var(--ribbon-drop));
+    font-weight: 600;
+    color: #15120d;
+    background: transparent;
+    filter: var(--ribbon-shadow);
+    transition: transform 0.15s ease, filter 0.15s ease, border-color 0.2s ease, color 0.2s ease;
+  }
 
-/* Colas: desplazadas hacia abajo respecto a la banda y en tono apagado (el envés).
-   Cada cola entra un poco bajo la banda; la parte que asoma debajo de ella lleva
-   un triangulo oscuro: es el pliegue donde el liston se dobla hacia atras.
-   Capas de fondo (la primera queda encima):
-     1-2. triangulos del pliegue, izquierdo y derecho
-     3-4. cuerpo de cada cola, solo en los extremos (el centro queda vacio) */
-.btn::before {
-  content: "";
-  position: absolute;
-  z-index: -2;
-  inset: calc(var(--ribbon-drop) + 0.4rem) 0 0 0;
-  background:
-    linear-gradient(to top right, transparent 50%, var(--ribbon-fold-color) 50%)
-      var(--ribbon-tail) 100% / var(--ribbon-drop) var(--ribbon-drop) no-repeat,
-    linear-gradient(to top left, transparent 50%, var(--ribbon-fold-color) 50%)
-      calc(100% - var(--ribbon-tail)) 100% / var(--ribbon-drop) var(--ribbon-drop) no-repeat,
-    var(--ribbon-tail-color) 0 0 / calc(var(--ribbon-tail) + var(--ribbon-drop)) 100% no-repeat,
-    var(--ribbon-tail-color) 100% 0 / calc(var(--ribbon-tail) + var(--ribbon-drop)) 100% no-repeat;
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    calc(100% - var(--ribbon-notch)) 50%,
-    100% 100%,
-    0 100%,
-    var(--ribbon-notch) 50%
-  );
-}
+  /* Colas: desplazadas hacia abajo respecto a la banda y en tono apagado (el envés).
+     Cada cola entra un poco bajo la banda; la parte que asoma debajo de ella lleva
+     un triangulo oscuro: es el pliegue donde el liston se dobla hacia atras.
+     Capas de fondo (la primera queda encima):
+       1-2. triangulos del pliegue, izquierdo y derecho
+       3-4. cuerpo de cada cola, solo en los extremos (el centro queda vacio) */
+  .btn::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: calc(var(--ribbon-drop) + 0.4rem) 0 0 0;
+    background:
+      linear-gradient(to top right, transparent 50%, var(--ribbon-fold-color) 50%)
+        var(--ribbon-tail) 100% / var(--ribbon-drop) var(--ribbon-drop) no-repeat,
+      linear-gradient(to top left, transparent 50%, var(--ribbon-fold-color) 50%)
+        calc(100% - var(--ribbon-tail)) 100% / var(--ribbon-drop) var(--ribbon-drop) no-repeat,
+      var(--ribbon-tail-color) 0 0 / calc(var(--ribbon-tail) + var(--ribbon-drop)) 100% no-repeat,
+      var(--ribbon-tail-color) 100% 0 / calc(var(--ribbon-tail) + var(--ribbon-drop)) 100% no-repeat;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      calc(100% - var(--ribbon-notch)) 50%,
+      100% 100%,
+      0 100%,
+      var(--ribbon-notch) 50%
+    );
+  }
 
-/* Banda central: el rectangulo plano. Las sombras laterales son el pliegue. */
-.btn::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0 var(--ribbon-tail) var(--ribbon-drop);
-  background: linear-gradient(180deg, #f2dd92, var(--brass) 55%, #c9a02c);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
-    -3px 0 7px -2px rgba(0, 0, 0, 0.7),
-    3px 0 7px -2px rgba(0, 0, 0, 0.7);
-}
+  /* Banda central: el rectangulo plano. Las sombras laterales son el pliegue. */
+  .btn::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0 var(--ribbon-tail) var(--ribbon-drop);
+    background: linear-gradient(180deg, #f2dd92, var(--brass) 55%, #c9a02c);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+      -3px 0 7px -2px rgba(0, 0, 0, 0.7),
+      3px 0 7px -2px rgba(0, 0, 0, 0.7);
+  }
 
-.btn:hover {
-  filter: var(--ribbon-shadow) brightness(1.08);
-}
-.btn:active {
-  transform: translateY(1px) scale(0.99);
-}
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+  .btn:hover {
+    filter: var(--ribbon-shadow) brightness(1.08);
+  }
+  .btn:active {
+    transform: translateY(1px) scale(0.99);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 
-.btn-sm {
-  --ribbon-tail: 1.15rem;
-  --ribbon-notch: 0.45rem;
-  --ribbon-drop: 0.35rem;
-  padding: 0.5rem calc(var(--ribbon-tail) + 1rem) calc(0.5rem + var(--ribbon-drop));
-  font-size: 0.85rem;
-}
+  .btn-sm {
+    --ribbon-tail: 1.15rem;
+    --ribbon-notch: 0.45rem;
+    --ribbon-drop: 0.35rem;
+    padding: 0.5rem calc(var(--ribbon-tail) + 1rem) calc(0.5rem + var(--ribbon-drop));
+    font-size: 0.85rem;
+  }
 
-/* El secundario se queda como pastilla: dos listones juntos saturan. */
-.btn-ghost {
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.7rem 1.4rem;
-  filter: none;
-}
-.btn-ghost.btn-sm {
-  padding: 0.5rem 1.1rem;
-}
-.btn-ghost::before,
-.btn-ghost::after {
-  content: none;
-}
-.btn-ghost:hover {
-  border-color: var(--brass);
-  color: var(--brass-ink);
-  filter: none;
+  /* El secundario se queda como pastilla: dos listones juntos saturan. */
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.7rem 1.4rem;
+    filter: none;
+  }
+  .btn-ghost.btn-sm {
+    padding: 0.5rem 1.1rem;
+  }
+  .btn-ghost::before,
+  .btn-ghost::after {
+    content: none;
+  }
+  .btn-ghost:hover {
+    border-color: var(--brass);
+    color: var(--brass-ink);
+    filter: none;
+  }
+
+  /* ---------- Botones del panel ---------- */
+
+  /* Dentro de .ui-plain (el layout de /admin) el liston se apaga y quedan
+     pastillas planas. Mayor especificidad que `.btn`, y `.ui-plain .btn-ghost`
+     va despues para que el secundario recupere su fondo transparente. */
+  .ui-plain .btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #e8cc72, var(--brass));
+    color: #15120d;
+    letter-spacing: normal;
+    filter: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .ui-plain .btn::before,
+  .ui-plain .btn::after {
+    content: none;
+  }
+  .ui-plain .btn:hover {
+    filter: brightness(1.07);
+  }
+  .ui-plain .btn:active {
+    transform: scale(0.98);
+  }
+  .ui-plain .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: none;
+  }
+  .ui-plain .btn-ghost:hover {
+    border-color: var(--brass);
+    color: var(--brass-ink);
+    filter: none;
+  }
+  .ui-plain .btn-sm {
+    padding: 0.45rem 0.95rem;
+  }
 }
 
 /* ---------- Formularios ---------- */
@@ -258,28 +299,57 @@ body {
 
 /* ---------- Hero ---------- */
 
-/* La foto es fondo, no protagonista: en gris y atenuada para que
-   el eslogan de adelante gane todo el peso. */
+/* Foto nítida, con sus colores originales. */
 .hero-photo {
-  /* Desenfocada y con poca luz, pero conservando algo de color: la idea es que
-     se vaya de foco detras del texto, no que sea una foto en blanco y negro. */
-  filter: saturate(0.6) brightness(0.68) blur(5px);
-  /* El blur aclara los bordes del recuadro; la escala los saca de cuadro. */
-  transform: scale(1.06);
+  filter: none;
 }
 
-/* Oscurece la foto para que el eslogan se lea, y la disuelve en el negro
-   de la pagina para que no haya costura con la seccion siguiente. */
+/* Mantiene el texto legible y funde el borde inferior con el fondo. */
 .hero-scrim {
-  background:
-    radial-gradient(120% 85% at 50% 42%, transparent 0%, rgba(10, 9, 8, 0.5) 55%, rgba(10, 9, 8, 0.88) 100%),
-    linear-gradient(
-      to bottom,
-      rgba(10, 9, 8, 0.8) 0%,
-      rgba(10, 9, 8, 0.45) 30%,
-      rgba(10, 9, 8, 0.82) 72%,
-      var(--paper) 100%
-    );
+  background: linear-gradient(
+    to bottom,
+    rgb(10 9 8 / 70%) 0%,
+    rgb(10 9 8 / 70%) 55%,
+    rgb(10 9 8 / 78%) 70%,
+    rgb(10 9 8 / 92%) 88%,
+    var(--paper) 100%
+  );
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  background: var(--card);
+}
+
+.footer-link {
+  display: inline-block;
+  padding-block: 0.65rem;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover,
+.footer-brand:hover {
+  color: var(--brass-ink);
+}
+
+.footer-brand {
+  transition: color 0.2s ease;
+}
+
+.footer-link:focus-visible,
+.footer-brand:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 5px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-link,
+  .footer-brand {
+    transition: none;
+  }
 }
 
 /* ---------- Carrusel de clientes ---------- */

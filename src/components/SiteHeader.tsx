@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const NAV = [
+  { href: "/login", label: "Iniciar sesión" },
   { href: "/", label: "Inicio" },
   { href: "/barberias", label: "Barberías" },
   { href: "/#para-barberias", label: "Para tu barbería" },
@@ -21,7 +22,7 @@ export default function SiteHeader() {
 
           <nav
             aria-label="Navegación principal"
-            className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2 md:gap-x-14 lg:gap-x-20"
+            className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2 md:gap-x-7 lg:gap-x-10"
           >
             {NAV.map((item) => (
               <Link key={item.href} href={item.href} className="nav-link">

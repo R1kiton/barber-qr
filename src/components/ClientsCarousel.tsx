@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { formatPrice, formatWorkDays } from "@/lib/time";
+import { formatPrice } from "@/lib/time";
+import { formatSchedule } from "@/lib/hours";
 import type { ShopCard } from "@/lib/types";
 
 const SPEED_PX_S = 26; // avance del desplazamiento automatico
@@ -10,7 +11,7 @@ const DRAG_THRESHOLD = 6; // px antes de considerar que se arrastro y no se hizo
 
 export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const paused = useRef(false);
+  const paused = useRef(false); // solo foco de teclado; el hover ya no detiene
   const dragging = useRef(false);
   const dragged = useRef(0);
 
@@ -45,10 +46,16 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
   // dejan de abrir. Para que el arrastre sobreviva si el cursor se sale de la
   // pista, escuchamos en document mientras dura.
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    paused.current = true;
-    if (e.pointerType !== "mouse" || e.button !== 0) return;
     const el = trackRef.current;
     if (!el) return;
+
+    // En tactil manda el scroll nativo: mientras el dedo esta puesto no
+    // avanzamos nosotros, o los dos movimientos se pelean.
+    if (e.pointerType !== "mouse") {
+      dragging.current = true;
+      return;
+    }
+    if (e.button !== 0) return;
 
     dragging.current = true;
     dragged.current = 0;
@@ -72,9 +79,10 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
     document.addEventListener("pointercancel", up);
   };
 
-  // En tactil, al soltar se reanuda; con mouse lo reanuda pointerleave.
+  // Tactil: al levantar el dedo se reanuda. Con mouse lo reanuda el `up` que
+  // vive en document, no esto.
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== "mouse") paused.current = false;
+    if (e.pointerType !== "mouse") dragging.current = false;
   };
 
   // Si se arrastro, el clic que sigue no debe abrir la barberia.
@@ -91,8 +99,6 @@ export default function ClientsCarousel({ shops }: { shops: ShopCard[] }) {
       <div
         ref={trackRef}
         className="no-scrollbar flex cursor-grab gap-4 overflow-x-auto overscroll-x-contain pb-2 active:cursor-grabbing"
-        onPointerEnter={() => (paused.current = true)}
-        onPointerLeave={() => (paused.current = false)}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
@@ -124,7 +130,7 @@ function ClientCard({ shop, duplicate = false }: { shop: ShopCard; duplicate?: b
       <h3 className="font-display text-xl leading-tight tracking-tight">{shop.name}</h3>
       {shop.address && <p className="mt-1 line-clamp-1 text-sm text-muted">{shop.address}</p>}
       <p className="mt-3 line-clamp-1 text-xs text-muted">
-        {formatWorkDays(shop.workDays)} · {shop.openTime}–{shop.closeTime}
+        {formatSchedule(shop)}
       </p>
       <p className="mt-auto flex items-center justify-between pt-4 text-sm">
         <span className="font-semibold text-brass-ink underline-offset-4 group-hover:underline">Reservar</span>

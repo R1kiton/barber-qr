@@ -1,5 +1,7 @@
 "use client";
 
+import { hoursForDay } from "@/lib/hours";
+
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { bookAppointment } from "@/app/actions";
@@ -183,7 +185,7 @@ export default function BookingWizard({ shop, today }: { shop: PublicShop; today
           <div className="-mx-5 overflow-x-auto px-5 pb-2">
             <div className="flex gap-2">
               {days.map((d) => {
-                const open = shop.workDays.includes(weekday(d));
+                const open = !!hoursForDay(shop, weekday(d));
                 const sel = d === date;
                 return (
                   <button

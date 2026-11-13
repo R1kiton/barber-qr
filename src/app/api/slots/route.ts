@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import { getShop, listAppointments } from "@/lib/db";
+import * as shops from "@/services/shop.service";
+import * as appointments from "@/services/appointment.service";
 import { availableSlots } from "@/lib/slots";
 import { isValidDate } from "@/lib/time";
 
@@ -11,10 +12,10 @@ export async function GET(req: NextRequest) {
   const barberId = p.get("barberId") ?? "any";
 
   if (!isValidDate(date)) return Response.json({ slots: [] }, { status: 400 });
-  const shop = await getShop(slug);
+  const shop = await shops.getBySlug(slug);
   if (!shop) return Response.json({ slots: [] }, { status: 404 });
 
-  const appts = await listAppointments(shop.id, { from: date, to: date });
+  const appts = await appointments.listByDateRange(shop.id, { from: date, to: date });
   const slots = availableSlots(shop, appts, date, serviceId, barberId, new Date());
   return Response.json({ slots }, { headers: { "Cache-Control": "no-store" } });
 }

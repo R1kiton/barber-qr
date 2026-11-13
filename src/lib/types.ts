@@ -10,6 +10,10 @@ export type Barber = {
   name: string;
 };
 
+export type DayHours = { openTime: string; closeTime: string };
+/** Seven entries, indexed Sunday (0) through Saturday (6); null means closed. */
+export type WeeklyHours = (DayHours | null)[];
+
 export type Shop = {
   id: string;
   slug: string;
@@ -17,6 +21,7 @@ export type Shop = {
   address: string;
   phone: string;
   pinHash: string;
+  weeklyHours?: WeeklyHours;
   openTime: string; // "HH:MM"
   closeTime: string; // "HH:MM"
   workDays: number[]; // 0 = domingo … 6 = sábado
@@ -49,6 +54,7 @@ export type Appointment = {
 
 /** Resumen público de una barbería para el directorio de la portada. */
 export type ShopCard = {
+  weeklyHours?: WeeklyHours;
   slug: string;
   name: string;
   address: string;

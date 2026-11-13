@@ -42,3 +42,37 @@ next-env.d.ts
 
 # base de datos local
 /data/
+
+/src/generated/prisma
+
+# AI assistants, agent instructions, skills and MCP configuration
+.agents/
+.claude/
+.codex/
+.cursor/
+.windsurf/
+.aider*
+.continue/
+.cline/
+.roo/
+.kilocode/
+.gemini/
+.opencode/
+.copilot/
+.taste-skill/
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.cursorignore
+.windsurfrules
+.clinerules
+.roorules
+.mcp.json
+mcp.json
+skills-lock.json
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+.github/agents/

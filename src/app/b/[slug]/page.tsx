@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getShop, toPublic } from "@/lib/db";
+import * as shops from "@/services/shop.service";
 import { localDateStr } from "@/lib/time";
 import BookingWizard from "./BookingWizard";
 
@@ -17,7 +17,7 @@ export default function ShopPage({ params }: PageProps<"/b/[slug]">) {
 
 async function ShopContent({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const shop = await getShop(slug);
+  const shop = await shops.getBySlug(slug);
   if (!shop) notFound();
 
   return (
@@ -31,7 +31,7 @@ async function ShopContent({ params }: { params: Promise<{ slug: string }> }) {
           </p>
         )}
       </header>
-      <BookingWizard shop={toPublic(shop)} today={localDateStr(new Date())} />
+      <BookingWizard shop={shops.toPublic(shop)} today={localDateStr(new Date())} />
     </div>
   );
 }

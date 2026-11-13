@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import ShopTile from "@/components/ShopTile";
 import SiteHeader from "@/components/SiteHeader";
-import { listShops } from "@/lib/db";
+import * as shops from "@/services/shop.service";
 
 export const metadata = {
   title: "Barberías · BarberQR",
@@ -39,9 +39,9 @@ function GridSkeleton() {
 }
 
 async function Grid() {
-  const shops = await listShops();
+  const cards = await shops.listCards();
 
-  if (shops.length === 0) {
+  if (cards.length === 0) {
     return (
       <div className="mt-10 rounded-2xl border border-line bg-card p-10 text-center">
         <p className="font-semibold">Todavía no hay barberías registradas.</p>
@@ -54,7 +54,7 @@ async function Grid() {
 
   return (
     <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {shops.map((shop) => (
+      {cards.map((shop) => (
         <ShopTile key={shop.slug} shop={shop} />
       ))}
     </ul>

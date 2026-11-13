@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAppointment, getShop } from "@/lib/db";
+import * as shops from "@/services/shop.service";
+import * as appointments from "@/services/appointment.service";
 import { cancelByCustomer } from "@/app/actions";
 import { getOrigin } from "@/lib/origin";
 import { qrPng, qrSvg } from "@/lib/qr";
@@ -20,8 +21,8 @@ export default function CitaPage({ params }: PageProps<"/b/[slug]/cita/[id]">) {
 
 async function CitaContent({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const shop = await getShop(slug);
-  const appt = shop ? await getAppointment(shop.id, id) : undefined;
+  const shop = await shops.getBySlug(slug);
+  const appt = shop ? await appointments.getById(shop.id, id) : undefined;
   if (!shop || !appt) notFound();
 
   const barber = shop.barbers.find((b) => b.id === appt.barberId);

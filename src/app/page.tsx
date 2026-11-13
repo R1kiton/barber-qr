@@ -3,17 +3,19 @@ import Image from "next/image";
 import Link from "next/link";
 import ClientsCarousel from "@/components/ClientsCarousel";
 import SiteHeader from "@/components/SiteHeader";
-import { listShops } from "@/lib/db";
+import SiteFooter from "@/components/SiteFooter";
+import * as shops from "@/services/shop.service";
 
 export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
+      <main id="inicio" className="flex-1">
         <Hero />
         <Clients />
         <ForBarbershops />
       </main>
+      <SiteFooter />
     </>
   );
 }
@@ -31,7 +33,7 @@ function Hero() {
         sizes="100vw"
         className="hero-photo -z-10 object-cover"
       />
-      {/* Oscurece para leer el eslogan y disuelve el borde inferior en el negro de la pagina. */}
+      {/* Capa oscura para destacar el eslogan sin desenfocar la foto. */}
       <div className="hero-scrim absolute inset-0 -z-10" />
 
       <div className="mx-auto max-w-3xl px-5 py-24 text-center">
@@ -78,9 +80,9 @@ function CarouselSkeleton() {
 }
 
 async function ClientsTrack() {
-  const shops = await listShops();
+  const cards = await shops.listCards();
 
-  if (shops.length === 0) {
+  if (cards.length === 0) {
     return (
       <p className="mt-10 text-center text-muted">
         Todavía no hay barberías registradas. La tuya puede ser la primera.
@@ -90,7 +92,7 @@ async function ClientsTrack() {
 
   return (
     <>
-      <ClientsCarousel shops={shops} />
+      <ClientsCarousel shops={cards} />
       <div className="mt-8 text-center">
         <Link href="/barberias" className="btn btn-ghost btn-sm">
           Ver todas
@@ -107,7 +109,7 @@ function ForBarbershops() {
     <section id="para-barberias" className="flex min-h-svh items-center border-t border-line py-24">
       <div className="mx-auto w-full max-w-2xl px-5 text-center">
         <h2 className="font-display text-4xl tracking-tight">
-          ¿Buscas <em className="text-brass">nuestros servicios</em>?
+          ¿Requieres <em className="text-brass">de nuestros servicios</em>?
         </h2>
         <p className="mt-5 text-balance text-muted">
           Publica tu barbería, recibe reservas desde tu propio enlace y lleva la agenda del día en un

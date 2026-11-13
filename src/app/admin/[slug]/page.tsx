@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getShop, listAppointments } from "@/lib/db";
+import { notFound, redirect } from "next/navigation";
+import * as shops from "@/services/shop.service";
+import * as appointments from "@/services/appointment.service";
 import { isAdmin } from "@/lib/auth";
 import { getOrigin } from "@/lib/origin";
 import { DAY_SHORT, addDays, formatDateLong, formatPrice, isValidDate, localDateStr, weekday } from "@/lib/time";
@@ -14,10 +15,9 @@ import {
   removeBarber,
   removeService,
   setAppointmentStatus,
-  updateHours,
 } from "@/app/actions";
-import LoginForm from "./LoginForm";
 import CodeLookup from "./CodeLookup";
+import HoursForm from "./HoursForm";
 
 export default function AdminPage({ params, searchParams }: PageProps<"/admin/[slug]">) {
   return (
@@ -39,17 +39,17 @@ async function AdminContent({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const shop = await getShop(slug);
+  const shop = await shops.getBySlug(slug);
   if (!shop) notFound();
-  if (!(await isAdmin(shop))) return <LoginForm slug={slug} shopName={shop.name} />;
+  if (!(await isAdmin(shop))) redirect("/login");
 
   const today = localDateStr(new Date());
   const fecha = typeof sp.fecha === "string" && isValidDate(sp.fecha) ? sp.fecha : today;
 
   const week = Array.from({ length: 7 }, (_, i) => addDays(today, i));
   const [ofDay, weekAppts] = await Promise.all([
-    listAppointments(shop.id, { from: fecha, to: fecha }),
-    listAppointments(shop.id, { from: week[0], to: week[6] }),
+    appointments.listByDateRange(shop.id, { from: fecha, to: fecha }),
+    appointments.listByDateRange(shop.id, { from: week[0], to: week[6] }),
   ]);
   const countFor = (d: string) => weekAppts.filter((a) => a.date === d && a.status !== "cancelada").length;
   const income = ofDay.filter((a) => a.status !== "cancelada").reduce((sum, a) => sum + a.price, 0);
@@ -77,7 +77,7 @@ async function AdminContent({
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* Agenda */}
-        <section className="rounded-2xl border border-line bg-card p-5">
+        <section className="min-w-0 rounded-2xl border border-line bg-card p-5">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {week.map((d) => (
               <Link
@@ -214,14 +214,12 @@ function StatusButton({ shop, id, status, label }: { shop: Shop; id: string; sta
   );
 }
 
-const ORDER = [1, 2, 3, 4, 5, 6, 0];
-
 function Settings({ shop }: { shop: Shop }) {
   const slug = <input type="hidden" name="slug" value={shop.slug} />;
   return (
     <section className="mt-10">
       <h2 className="font-display text-2xl">Configuración</h2>
-      <div className="mt-4 grid gap-6 md:grid-cols-3">
+      <div className="mt-4 grid gap-6 md:grid-cols-2">
         <div className="rounded-2xl border border-line bg-card p-5">
           <h3 className="font-semibold">Servicios</h3>
           <ul className="mt-3 divide-y divide-line text-sm">
@@ -276,37 +274,7 @@ function Settings({ shop }: { shop: Shop }) {
           </form>
         </div>
 
-        <form action={updateHours} className="rounded-2xl border border-line bg-card p-5">
-          {slug}
-          <h3 className="font-semibold">Horario</h3>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <label className="text-sm">
-              Abre
-              <input name="openTime" type="time" defaultValue={shop.openTime} className="field mt-1" />
-            </label>
-            <label className="text-sm">
-              Cierra
-              <input name="closeTime" type="time" defaultValue={shop.closeTime} className="field mt-1" />
-            </label>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {ORDER.map((d) => (
-              <label key={d} className="cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="workDays"
-                  value={d}
-                  defaultChecked={shop.workDays.includes(d)}
-                  className="peer sr-only"
-                />
-                <span className="inline-block rounded-full border border-line px-2.5 py-1 text-xs peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper">
-                  {DAY_SHORT[d]}
-                </span>
-              </label>
-            ))}
-          </div>
-          <button className="btn mt-4 px-4 py-2 text-sm">Guardar horario</button>
-        </form>
+        <HoursForm shop={{ slug: shop.slug, openTime: shop.openTime, closeTime: shop.closeTime, workDays: shop.workDays, weeklyHours: shop.weeklyHours }} />
       </div>
     </section>
   );

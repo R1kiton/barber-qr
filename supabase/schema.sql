@@ -1,3 +1,8 @@
+-- SUPERADO POR PRISMA.
+-- La fuente de verdad del esquema es ahora prisma/schema.prisma y las
+-- migraciones de prisma/migrations/. Este archivo se conserva como referencia
+-- historica: es el SQL con el que se creo la base y el contenido de 0_init.
+
 -- Esquema de BarberQR para Supabase (Postgres).
 -- Se puede ejecutar varias veces sin romper nada.
 

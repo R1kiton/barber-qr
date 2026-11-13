@@ -1,5 +1,6 @@
 import type { Appointment, Shop } from "./types";
 import { localDateStr, toHHMM, toMin, weekday } from "./time";
+import { hoursForDay } from "./hours";
 
 export const SLOT_STEP_MIN = 30;
 export const MAX_DAYS_AHEAD = 30;
@@ -38,7 +39,8 @@ export function availableSlots(
   const service = shop.services.find((s) => s.id === serviceId);
   if (!service) return [];
   if (barberId !== "any" && !shop.barbers.some((b) => b.id === barberId)) return [];
-  if (!shop.workDays.includes(weekday(date))) return [];
+  const hours = hoursForDay(shop, weekday(date));
+  if (!hours) return [];
 
   const today = localDateStr(now);
   if (date < today) return [];
@@ -47,8 +49,8 @@ export function availableSlots(
   if (date > localDateStr(limit)) return [];
 
   const nowMin = date === today ? now.getHours() * 60 + now.getMinutes() : -1;
-  const open = toMin(shop.openTime);
-  const close = toMin(shop.closeTime);
+  const open = toMin(hours.openTime);
+  const close = toMin(hours.closeTime);
   const out: string[] = [];
 
   for (let s = open; s + service.durationMin <= close; s += SLOT_STEP_MIN) {

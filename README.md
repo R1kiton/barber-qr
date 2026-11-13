@@ -7,22 +7,27 @@ QR con su cita; al llegar, la barbería lo escanea y confirma la llegada.
 
 ```bash
 npm install
+npm run db:generate
+npm run db:migrate
 npm run dev
 ```
 
 - Inicio: http://localhost:3000
 - Demo de reservas: http://localhost:3000/b/barberia-demo
-- Panel de la demo: http://localhost:3000/admin/barberia-demo (PIN `1234`)
+- Acceso de propietarios: http://localhost:3000/login
+- Configuración SMTP y vinculación de barberías existentes: [Acceso de propietarios](docs/owner-login.md)
 
 ## Rutas
 
 | Ruta | Qué es |
 | --- | --- |
-| `/registro` | Alta de una barbería (servicios, barberos, horario, PIN) |
+| `/registro` | Datos de barbería, correo del propietario y contraseña |
+| `/registro/verificar` | Verifica el correo antes de crear la barbería |
+| `/login` | Correo y contraseña; redirige al panel de la barbería propietaria |
 | `/b/[slug]` | Reserva: servicio → barbero → fecha/hora → datos |
 | `/b/[slug]/cita/[id]` | Comprobante con el QR de la cita y código de 6 caracteres; el cliente puede cancelar |
 | `/admin/[slug]` | Agenda, buscar cita por código, configuración |
-| `/admin/[slug]/checkin/[id]` | Lo que abre el QR del cliente: valida la cita y confirma la llegada (pide PIN) |
+| `/admin/[slug]/checkin/[id]` | Valida la cita y confirma la llegada; requiere sesión del propietario |
 | `/api/slots` | Horarios libres (sin solapamientos por barbero) |
 
 ## Probar el QR con el celular
@@ -33,17 +38,17 @@ o define:
 
 ```
 NEXT_PUBLIC_BASE_URL=https://tu-dominio.com
-ADMIN_SECRET=una-cadena-larga-y-secreta
 ```
 
 ## Datos (Supabase)
 
-Los datos viven en Supabase (Postgres). Tablas: `shops`, `services`, `barbers`, `appointments`.
+Los datos viven en Supabase (Postgres) y se consultan exclusivamente desde el servidor con Prisma. Supabase Auth no interviene.
 
-1. Ejecuta [`supabase/schema.sql`](supabase/schema.sql) en el **SQL Editor** de tu proyecto.
-2. En `.env.local` pon `SUPABASE_URL` y `SUPABASE_SECRET_KEY` (Project Settings → API Keys).
-3. `npm run dev`. La barbería demo se crea sola la primera vez que se visita.
+1. Configura `DATABASE_URL` y `DIRECT_URL` en `.env` con las conexiones PostgreSQL de tu proyecto. Codifica los caracteres especiales de la contraseña dentro de la URL.
+2. Aplica las migraciones con `npm run db:migrate` y genera el cliente con `npm run db:generate`. En una base ya existente creada con el SQL original, establece primero el baseline de `0_init`; no uses `db push` ni `migrate reset`.
+3. Completa las variables SMTP indicadas en [la guía de acceso](docs/owner-login.md).
+4. `npm run dev`. La barbería demo se crea sola al visitarla, pero no tiene acceso público al panel.
 
 Seguridad: las tablas tienen RLS activado sin políticas, así que la clave pública no puede leer
-nada. La app solo habla con Supabase desde el servidor (`src/lib/db.ts`) con la clave secreta.
+nada. La app se conecta a PostgreSQL desde el servidor (`src/lib/prisma.ts`).
 La propia base de datos impide dos citas solapadas con el mismo barbero (restricción `exclude`).

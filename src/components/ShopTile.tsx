@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { formatPrice, formatWorkDays } from "@/lib/time";
+import { formatPrice } from "@/lib/time";
+import { formatSchedule } from "@/lib/hours";
 import type { ShopCard } from "@/lib/types";
 
 /** Tarjeta de barbería para la rejilla de /barberias. */
@@ -22,7 +23,7 @@ export default function ShopTile({ shop }: { shop: ShopCard }) {
         {shop.address && <p className="mt-1 text-sm text-muted">{shop.address}</p>}
 
         <p className="mt-3 text-sm text-muted">
-          {formatWorkDays(shop.workDays)} · {shop.openTime}–{shop.closeTime}
+          {formatSchedule(shop)}
         </p>
 
         {shop.services.length > 0 && (
