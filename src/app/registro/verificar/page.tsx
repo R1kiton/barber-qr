@@ -6,7 +6,6 @@ import VerificationForm from "./VerificationForm";
 export default function VerifyPage() {
   return (
     <main className="ui-plain flex-1">
-      <div className="pole" />
       <div className="mx-auto max-w-lg px-5 py-16">
         <Suspense fallback={<p className="text-muted">Cargando…</p>}><Verification /></Suspense>
       </div>

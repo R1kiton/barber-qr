@@ -1,16 +1,15 @@
 import Link from "next/link";
 
 const NAV = [
-  { href: "/login", label: "Iniciar sesión" },
   { href: "/", label: "Inicio" },
   { href: "/barberias", label: "Barberías" },
-  { href: "/#para-barberias", label: "Para tu barbería" },
+  { href: "/#para-barberias", label: "unirse" },
+    { href: "/login", label: "Mi barberia" },
 ];
 
 export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-50">
-      <div className="pole" />
       <div className="border-b border-line bg-paper/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-5 py-4 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-8 md:py-5">
           <Link

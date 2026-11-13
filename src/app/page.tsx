@@ -106,10 +106,10 @@ async function ClientsTrack() {
 
 function ForBarbershops() {
   return (
-    <section id="para-barberias" className="flex min-h-svh items-center border-t border-line py-24">
+    <section id="para-barberias" style={{ scrollMarginTop: 0 }} className="flex min-h-svh items-center border-t border-line py-24">
       <div className="mx-auto w-full max-w-2xl px-5 text-center">
         <h2 className="font-display text-4xl tracking-tight">
-          ¿Requieres <em className="text-brass">de nuestros servicios</em>?
+          ¡Te ayudamos <em className="text-brass">a crecer</em> !
         </h2>
         <p className="mt-5 text-balance text-muted">
           Publica tu barbería, recibe reservas desde tu propio enlace y lleva la agenda del día en un

@@ -47,18 +47,6 @@ body {
   scroll-margin-top: 7rem;
 }
 
-/* Franja de poste de barbero, en dorado sobre negro */
-.pole {
-  height: 5px;
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--brass) 0 10px,
-    #0f0d0b 10px 20px,
-    #8c6a1f 20px 30px,
-    #0f0d0b 30px 40px
-  );
-}
-
 /* ---------- Header ---------- */
 
 /* Enlace de navegacion: al pasar el mouse se enciende en dorado y crece

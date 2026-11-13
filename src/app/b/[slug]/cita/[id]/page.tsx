@@ -11,7 +11,6 @@ import { formatDateLong, formatPrice } from "@/lib/time";
 export default function CitaPage({ params }: PageProps<"/b/[slug]/cita/[id]">) {
   return (
     <main className="flex-1">
-      <div className="pole" />
       <Suspense fallback={<p className="p-8 text-center text-muted">Cargando…</p>}>
         <CitaContent params={params} />
       </Suspense>

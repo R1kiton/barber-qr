@@ -10,7 +10,6 @@ import { formatDateLong, formatPrice, localDateStr, toMin } from "@/lib/time";
 export default function CheckInPage({ params }: PageProps<"/admin/[slug]/checkin/[id]">) {
   return (
     <main className="flex-1">
-      <div className="pole" />
       <Suspense fallback={<p className="p-8 text-center text-muted">Cargando…</p>}>
         <CheckIn params={params} />
       </Suspense>

@@ -6,7 +6,6 @@ import LoginForm from "../admin/[slug]/LoginForm";
 export default function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string | string[] }> }) {
   return (
     <main className="ui-plain flex-1">
-      <div className="pole" />
       <div className="px-5 py-16 sm:py-24">
         <Suspense fallback={<p className="text-center text-muted">Cargando…</p>}><Login searchParams={searchParams} /></Suspense>
       </div>

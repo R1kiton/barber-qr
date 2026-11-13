@@ -22,7 +22,6 @@ import HoursForm from "./HoursForm";
 export default function AdminPage({ params, searchParams }: PageProps<"/admin/[slug]">) {
   return (
     <main className="flex-1">
-      <div className="pole" />
       <Suspense fallback={<p className="p-8 text-center text-muted">Cargando…</p>}>
         <AdminContent params={params} searchParams={searchParams} />
       </Suspense>

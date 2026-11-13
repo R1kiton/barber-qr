@@ -181,7 +181,7 @@ export async function adminLogin(_prev: FormState, fd: FormData): Promise<FormSt
 
 export async function adminLogout() {
   await clearAdminSession();
-  redirect("/login");
+  redirect("/");
 }
 
 async function requireAdmin(slug: string) {

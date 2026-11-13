@@ -7,7 +7,6 @@ import BookingWizard from "./BookingWizard";
 export default function ShopPage({ params }: PageProps<"/b/[slug]">) {
   return (
     <main className="flex-1">
-      <div className="pole" />
       <Suspense fallback={<p className="p-8 text-center text-muted">Cargando…</p>}>
         <ShopContent params={params} />
       </Suspense>
